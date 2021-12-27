@@ -21,7 +21,7 @@ pub struct Object {
 
 pub struct RichObject<'a> {
     entity: hecs::EntityRef<'a>,
-    node: &'a mut baryon::Node,
+    pub node: &'a mut baryon::Node,
     node_ref: baryon::NodeRef,
 }
 
@@ -121,6 +121,47 @@ impl Engine {
             entity: self.scene.world.entity(object.entity).unwrap(),
             node: &mut self.scene.nodes[object.node],
             node_ref: object.node,
+        }
+    }
+
+    pub fn update(&mut self, delta: f32) {
+        let screen_size = self.screen_size();
+        let mut to_delete = Vec::new();
+
+        for (entity, (sprite, state)) in self
+            .scene
+            .world
+            .query::<(&baryon::Sprite, &mut State)>()
+            .iter()
+        {
+            let node = &mut self.scene.nodes[sprite.node];
+            node.post_move((delta * state.velocity).into());
+            state.velocity += delta * state.acceleration;
+
+            if state.stay_on_screen {
+                let pos = node.get_position();
+                let size = match sprite.uv {
+                    Some(ref range) => glam::Vec2::new(
+                        (range.end.x - range.start.x) as f32,
+                        (range.end.y - range.start.y) as f32,
+                    ),
+                    None => {
+                        let size = self.context.get_image_info(sprite.image).size;
+                        glam::Vec2::new(size.x as f32, size.y as f32)
+                    }
+                };
+                if pos.x < -size.x
+                    || pos.y < -size.y
+                    || pos.x > screen_size.0 + size.x
+                    || pos.y > screen_size.1 + size.y
+                {
+                    to_delete.push(entity);
+                }
+            }
+        }
+
+        for entity in to_delete {
+            self.scene.world.despawn(entity).unwrap();
         }
     }
 
