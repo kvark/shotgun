@@ -11,6 +11,7 @@ pollster = "0.2"
 rand = "0.8"
 
 [dependencies.baryon]
-#git = "https://github.com/kvark/baryon", rev = "f925df7"
-path = "../baryon"
+git = "https://github.com/kvark/baryon"
+rev = "c898b85"
+#path = "../baryon"
 features = ["window"]
