@@ -1,0 +1,16 @@
+[package]
+name = "shotgun"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+fxhash = "0.2"
+glam = "0.18"
+hecs = "0.7"
+pollster = "0.2"
+rand = "0.8"
+
+[dependencies.baryon]
+#git = "https://github.com/kvark/baryon", rev = "f925df7"
+path = "../baryon"
+features = ["window"]
